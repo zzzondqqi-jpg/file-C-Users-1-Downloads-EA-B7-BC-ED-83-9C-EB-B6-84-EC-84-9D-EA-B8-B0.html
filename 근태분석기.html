@@ -229,8 +229,15 @@ function parseTime(v){
   if(typeof v==='number'){ const t=Math.round(v*24*60); return {h:Math.floor(t/60),m:t%60}; }
   const s=String(v).trim();
   if(!s || s==='-') return null;
-  const m=s.match(/(\d{1,2}):(\d{2})/);
-  if(m) return {h:parseInt(m[1]),m:parseInt(m[2])};
+  // HH:MM:SS AM/PM
+  const m1=s.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+  if(m1){
+    let h=parseInt(m1[1]), mn=parseInt(m1[2]);
+    const ampm=(m1[3]||'').toUpperCase();
+    if(ampm==='PM' && h<12) h+=12;
+    if(ampm==='AM' && h===12) h=0;
+    return {h,m:mn};
+  }
   return null;
 }
 function timeToDecimal(t){ return t ? t.h+t.m/60 : null; }
@@ -281,10 +288,16 @@ function analyzeData(){
     let inHraw=inH;
     if(inHraw==null && colMap.inTime){
       const raw=String(row[colMap.inTime]||'').trim();
-      const m=raw.match(/(\d{1,2}):(\d{2})/);
-      if(m) inHraw=parseInt(m[1])+parseInt(m[2])/60;
+      const m=raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+      if(m){
+        let h=parseInt(m[1]); const mn=parseInt(m[2]);
+        const ampm=(m[3]||'').toUpperCase();
+        if(ampm==='PM' && h<12) h+=12;
+        if(ampm==='AM' && h===12) h=0;
+        inHraw=h+mn/60;
+      }
     }
-    const isLate=(!isWeekend && inHraw!=null && inHraw>9.0);
+    const isLate=(!isWeekend && inHraw!=null && inHraw<13 && inHraw>9.0);
     parsedRecords.push({name,date,inH:inHraw??inH,outH,workH,ot,night,isWeekend,isLate,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
   }
   if(!parsedRecords.length){ alert('분석 가능한 데이터가 없습니다. 컬럼 매핑을 다시 확인해주세요.'); return; }
