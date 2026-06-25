@@ -228,6 +228,7 @@ function parseTime(v){
   if(!v && v!==0) return null;
   if(typeof v==='number'){ const t=Math.round(v*24*60); return {h:Math.floor(t/60),m:t%60}; }
   const s=String(v).trim();
+  if(!s || s==='-') return null;
   const m=s.match(/(\d{1,2}):(\d{2})/);
   if(m) return {h:parseInt(m[1]),m:parseInt(m[2])};
   return null;
@@ -276,7 +277,7 @@ function analyzeData(){
     const ot=Math.max(0,workH-8);
     const night=(inH!=null&&outH!=null)?calcNight(inH,outH):0;
     const isWeekend=date.getDay()===0||date.getDay()===6;
-    const isLate=(!isWeekend && inH!=null && inH>9);
+    const isLate=(!isWeekend && inH!=null && inH>9.0);
     parsedRecords.push({name,date,inH,outH,workH,ot,night,isWeekend,isLate,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
   }
   if(!parsedRecords.length){ alert('분석 가능한 데이터가 없습니다. 컬럼 매핑을 다시 확인해주세요.'); return; }
