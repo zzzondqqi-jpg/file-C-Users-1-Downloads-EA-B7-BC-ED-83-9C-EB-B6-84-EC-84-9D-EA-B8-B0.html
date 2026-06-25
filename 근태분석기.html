@@ -9,45 +9,28 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif; background: #f5f5f7; color: #1d1d1f; font-size: 14px; }
-
 .app-header { background: #0A1628; padding: 16px 32px; display: flex; align-items: center; gap: 12px; }
 .app-header .logo { width: 8px; height: 32px; background: #3B82F6; border-radius: 2px; }
 .app-header h1 { color: #fff; font-size: 18px; font-weight: 600; }
 .app-header .sub { color: #94a3b8; font-size: 13px; margin-left: auto; }
-
 .container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-.upload-zone {
-  border: 2px dashed #c7d2fe;
-  border-radius: 12px;
-  padding: 48px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  background: #fff;
-  margin-bottom: 20px;
-}
+.upload-zone { border: 2px dashed #c7d2fe; border-radius: 12px; padding: 48px; text-align: center; cursor: pointer; background: #fff; margin-bottom: 20px; }
 .upload-zone:hover { background: #f0f4ff; border-color: #818cf8; }
 .upload-zone.dragover { border-color: #3B82F6; background: #eff6ff; }
 .upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
-.upload-zone h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1d1d1f; }
+.upload-zone h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
 .upload-zone p { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
 .upload-zone .hint { font-size: 12px; color: #9ca3af; margin-top: 10px; }
-
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: background 0.1s; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; }
 .btn:hover { background: #f3f4f6; }
 .btn-primary { background: #2563eb; color: #fff; border-color: #2563eb; }
 .btn-primary:hover { background: #1d4ed8; }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
-
 .card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px; margin-bottom: 16px; }
-
 .section-label { font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
-
 .col-map-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .col-map-grid label { font-size: 12px; color: #6b7280; display: block; margin-bottom: 4px; }
 .col-map-grid select { width: 100%; font-size: 13px; padding: 6px 10px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1d1d1f; }
-
 .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .metric-card { background: #f8faff; border: 1px solid #e0e7ff; border-radius: 10px; padding: 14px 16px; }
 .metric-card .label { font-size: 11px; color: #6b7280; margin-bottom: 6px; font-weight: 500; }
@@ -56,59 +39,47 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothi
 .metric-card .sub { font-size: 11px; color: #9ca3af; margin-top: 4px; }
 .metric-card.warn .value { color: #dc2626; }
 .metric-card.ok .value { color: #16a34a; }
-
 .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid #e5e7eb; margin-bottom: 16px; }
-.tab-btn { font-size: 13px; padding: 8px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: #6b7280; margin-bottom: -1px; font-weight: 500; transition: color 0.1s; }
+.tab-btn { font-size: 13px; padding: 8px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: #6b7280; margin-bottom: -1px; font-weight: 500; }
 .tab-btn:hover { color: #1d1d1f; }
 .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
-
 .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
 .filter-bar label { font-size: 12px; color: #6b7280; font-weight: 500; }
 .filter-bar select, .filter-bar input { font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1d1d1f; }
-
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 580px; }
-thead th { text-align: left; padding: 9px 12px; font-weight: 600; font-size: 11px; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap; cursor: pointer; user-select: none; text-transform: uppercase; letter-spacing: 0.04em; }
-thead th:hover { color: #1d1d1f; }
+thead th { text-align: left; padding: 9px 12px; font-weight: 600; font-size: 11px; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.04em; }
 tbody tr { border-bottom: 1px solid #f3f4f6; }
 tbody tr:hover { background: #f8faff; }
 tbody td { padding: 9px 12px; color: #1d1d1f; white-space: nowrap; }
-
 .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
 .badge-warn { background: #fef3c7; color: #92400e; }
 .badge-danger { background: #fee2e2; color: #991b1b; }
 .badge-ok { background: #dcfce7; color: #166534; }
-
 .chart-wrap { position: relative; width: 100%; height: 240px; margin-bottom: 20px; }
-
 .empty-state { text-align: center; padding: 32px; color: #9ca3af; font-size: 13px; }
-
 .legend { display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; }
 .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
-
 .action-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid #f3f4f6; margin-top: 4px; }
-
+.over52-section { margin-top: 20px; border-top: 2px solid #fee2e2; padding-top: 16px; }
 footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
 </style>
 </head>
 <body>
-
 <div class="app-header">
   <div class="logo"></div>
   <h1>근태 분석기</h1>
   <span class="sub">메가인포에셋 인사팀</span>
 </div>
-
 <div class="container">
-
   <div id="upload-section">
     <div id="upload-zone" class="upload-zone">
       <div class="icon">📊</div>
       <h2>근태 출퇴근기록 파일 업로드</h2>
       <p>.xlsx / .xls / .csv 형식 지원 · 드래그 앤 드롭 가능</p>
       <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">파일 선택</button>
-      <div class="hint">파일은 브라우저 내에서만 처리되며 외부로 전송되지 않습니다</div>
+      <div class="hint">파일은 브라우저 내에서만 처리됩니다</div>
       <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
     </div>
     <div id="col-map-section" style="display:none;" class="card">
@@ -124,7 +95,6 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
   <div id="results" style="display:none;">
     <div class="section-label">요약</div>
     <div class="metric-grid" id="summary-cards"></div>
-
     <div class="card">
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="weekly">주별 현황</button>
@@ -133,14 +103,15 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
         <button class="tab-btn" data-tab="chart">차트</button>
       </div>
 
+      <!-- 주별 현황 -->
       <div id="tab-weekly">
         <div class="filter-bar">
           <label>이름</label>
-          <select id="filter-name"></select>
+          <select id="fw-name"></select>
           <label>월</label>
-          <select id="filter-month"></select>
+          <select id="fw-month"></select>
           <label>52h 한도</label>
-          <select id="filter-weekly-over">
+          <select id="fw-over">
             <option value="">전체</option>
             <option value="over">초과만</option>
             <option value="ok">정상만</option>
@@ -157,12 +128,13 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
         </div>
       </div>
 
+      <!-- 월별 집계 -->
       <div id="tab-monthly" style="display:none;">
         <div class="filter-bar">
           <label>이름</label>
-          <select id="filter-monthly-name"></select>
+          <select id="fm-name"></select>
           <label>초과주 여부</label>
-          <select id="filter-monthly-over">
+          <select id="fm-over">
             <option value="">전체</option>
             <option value="over">초과 있음</option>
             <option value="ok">초과 없음</option>
@@ -179,13 +151,14 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
         </div>
       </div>
 
+      <!-- 상세 기록 -->
       <div id="tab-detail" style="display:none;">
         <div class="filter-bar">
           <label>이름</label>
-          <select id="filter-name2"></select>
-          <input type="date" id="filter-from">
+          <select id="fd-name"></select>
+          <input type="date" id="fd-from">
           <span style="color:#9ca3af;">~</span>
-          <input type="date" id="filter-to">
+          <input type="date" id="fd-to">
         </div>
         <div class="table-wrap">
           <table>
@@ -198,15 +171,16 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
         </div>
       </div>
 
+      <!-- 차트 -->
       <div id="tab-chart" style="display:none;">
         <div class="filter-bar">
           <label>이름</label>
-          <select id="filter-name-chart"></select>
+          <select id="fc-name"></select>
         </div>
         <div class="section-label" style="margin-top:8px;">월별 근로시간 추이</div>
         <div class="legend">
           <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span>총 근로</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#ef4444; opacity:.6;"></span>연장근로</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span>연장근로</span>
         </div>
         <div class="chart-wrap"><canvas id="lineChart" role="img" aria-label="월별 근로시간 추이"></canvas></div>
         <div class="section-label">주별 연장근로</div>
@@ -216,14 +190,17 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
         </div>
         <div class="chart-wrap"><canvas id="barChart" role="img" aria-label="주별 연장근로"></canvas></div>
 
-        <div class="section-label" style="margin-top:8px; color:#991b1b;">⚠ 주 52시간 초과 내역</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>이름</th><th>주차</th><th>근무일수</th><th>주 총근로</th><th>초과시간(52h 기준)</th><th>야간근로</th>
-            </tr></thead>
-            <tbody id="over52-body"></tbody>
-          </table>
+        <div class="over52-section">
+          <div class="section-label" style="color:#991b1b;">⚠ 주 52시간 초과 내역</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>이름</th><th>주차</th><th>근무일수</th>
+                <th>주 총근로</th><th>52h 초과시간</th><th>야간근로</th>
+              </tr></thead>
+              <tbody id="over52-body"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -234,9 +211,8 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
       </div>
     </div>
   </div>
-
 </div>
-<footer>메가인포에셋 인사팀 · 근태 분석기 v1.0 · 모든 데이터는 브라우저 내에서만 처리됩니다</footer>
+<footer>메가인포에셋 인사팀 · 근태 분석기 v1.1 · 모든 데이터는 브라우저 내에서만 처리됩니다</footer>
 
 <script>
 let rawRows=[], headers=[], colMap={}, parsedRecords=[], weeklyData=[], monthlyData=[];
@@ -315,18 +291,23 @@ function analyzeData(){
   renderResults();
 }
 
+function populateSel(id, names){
+  const sel=document.getElementById(id);
+  const prev=sel.value;
+  sel.innerHTML='<option value="">전체</option>';
+  names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+  if(prev) sel.value=prev;
+}
+
 function renderResults(){
   document.getElementById('upload-section').style.display='none';
   document.getElementById('results').style.display='block';
-  const names=[...new Set(parsedRecords.map(r=>r.name))];
+  const names=[...new Set(parsedRecords.map(r=>r.name))].sort();
   const months=[...new Set(parsedRecords.map(r=>r.monthKey))].sort();
 
-  ['filter-name','filter-name2','filter-name-chart','filter-monthly-name'].forEach(id=>{
-    const sel=document.getElementById(id);
-    sel.innerHTML='<option value="">전체</option>';
-    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-  });
-  const ms=document.getElementById('filter-month');
+  ['fw-name','fm-name','fd-name','fc-name'].forEach(id=>populateSel(id,names));
+
+  const ms=document.getElementById('fw-month');
   ms.innerHTML='<option value="">전체</option>';
   months.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
 
@@ -351,9 +332,9 @@ function renderSummary(){
 }
 
 function renderWeekly(){
-  const nm=document.getElementById('filter-name').value;
-  const mo=document.getElementById('filter-month').value;
-  const ov=document.getElementById('filter-weekly-over').value;
+  const nm=document.getElementById('fw-name').value;
+  const mo=document.getElementById('fw-month').value;
+  const ov=document.getElementById('fw-over').value;
   let data=weeklyData;
   if(nm) data=data.filter(w=>w.name===nm);
   if(mo) data=data.filter(w=>w.week.startsWith(mo.split('-')[0]+'년'));
@@ -361,7 +342,7 @@ function renderWeekly(){
   if(ov==='ok') data=data.filter(w=>!w.over52);
   const tb=document.getElementById('weekly-body');
   if(!data.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">데이터 없음</td></tr>';return;}
-  tb.innerHTML=data.map(w=>`<tr>
+  tb.innerHTML=data.map(w=>`<tr${w.over52?' style="background:#fff5f5;"':''}>
     <td>${w.name}</td><td>${w.week}</td><td>${w.days}일</td>
     <td><b>${w.total.toFixed(1)}h</b></td>
     <td>${w.totalOT.toFixed(1)}h</td>
@@ -371,26 +352,27 @@ function renderWeekly(){
 }
 
 function renderMonthly(){
-  const nm=document.getElementById('filter-monthly-name').value;
-  const ov=document.getElementById('filter-monthly-over').value;
+  const nm=document.getElementById('fm-name').value;
+  const ov=document.getElementById('fm-over').value;
   let data=monthlyData;
   if(nm) data=data.filter(m=>m.name===nm);
   if(ov==='over') data=data.filter(m=>m.overDays>0);
   if(ov==='ok') data=data.filter(m=>m.overDays===0);
   const tb=document.getElementById('monthly-body');
+  if(!data.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">데이터 없음</td></tr>';return;}
   tb.innerHTML=data.map(m=>`<tr>
     <td>${m.name}</td><td>${m.month}</td><td>${m.days}일</td>
     <td><b>${m.total.toFixed(1)}</b></td>
     <td>${m.ot.toFixed(1)}</td>
     <td>${m.night.toFixed(1)}</td>
     <td>${m.overDays>0?'<span class="badge badge-warn">'+m.overDays+'주</span>':'<span class="badge badge-ok">없음</span>'}</td>
-  </tr>`).join('') || '<tr><td colspan="7" class="empty-state">데이터 없음</td></tr>';
+  </tr>`).join('');
 }
 
 function renderDetail(){
-  const nm=document.getElementById('filter-name2').value;
-  const from=document.getElementById('filter-from').value;
-  const to=document.getElementById('filter-to').value;
+  const nm=document.getElementById('fd-name').value;
+  const from=document.getElementById('fd-from').value;
+  const to=document.getElementById('fd-to').value;
   let data=parsedRecords.slice().sort((a,b)=>a.date-b.date);
   if(nm) data=data.filter(r=>r.name===nm);
   if(from) data=data.filter(r=>fmtDate(r.date)>=from);
@@ -441,17 +423,15 @@ function renderCharts(nm){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxRotation:45,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:v=>v+'h'}}}}
   });
 
-  const over52 = nm ? weeklyData.filter(w=>w.name===nm&&w.over52) : weeklyData.filter(w=>w.over52);
-  const ob = document.getElementById('over52-body');
+  const over52=nm?weeklyData.filter(w=>w.name===nm&&w.over52):weeklyData.filter(w=>w.over52);
+  const ob=document.getElementById('over52-body');
   if(!over52.length){
     ob.innerHTML='<tr><td colspan="6" class="empty-state" style="color:#16a34a;">✓ 52시간 초과 내역 없음</td></tr>';
   } else {
     ob.innerHTML=over52.map(w=>`<tr style="background:#fff5f5;">
-      <td><b>${w.name}</b></td>
-      <td>${w.week}</td>
-      <td>${w.days}일</td>
+      <td><b>${w.name}</b></td><td>${w.week}</td><td>${w.days}일</td>
       <td><b style="color:#dc2626;">${w.total.toFixed(1)}h</b></td>
-      <td><span class="badge badge-danger">+${(w.total-52).toFixed(1)}h 초과</span></td>
+      <td><span class="badge badge-danger">+${(w.total-52).toFixed(1)}h</span></td>
       <td>${w.night.toFixed(1)}h</td>
     </tr>`).join('');
   }
@@ -459,14 +439,14 @@ function renderCharts(nm){
 
 function buildColMapUI(){
   const roles=[
-    {key:'name',label:'이름 / 사번',hints:['이름','성명','사번','직원','name','employee']},
-    {key:'date',label:'날짜 ★',hints:['날짜','일자','date','근무일']},
-    {key:'inTime',label:'출근시간',hints:['출근','in','start','출근시각','시작']},
-    {key:'outTime',label:'퇴근시간',hints:['퇴근','out','end','퇴근시각','종료']},
-    {key:'hours',label:'근무시간(h)',hints:['근무시간','총시간','hours','work','시간수','근로시간']},
+    {key:'name',label:'이름 / 사번',hints:['이름','성명','사번','직원','name','employee','성 명','직원명']},
+    {key:'date',label:'날짜 ★',hints:['날짜','일자','date','근무일','일 자']},
+    {key:'inTime',label:'출근시간',hints:['출근','in','start','출근시각','시작','출근 시간']},
+    {key:'outTime',label:'퇴근시간',hints:['퇴근','out','end','퇴근시각','종료','퇴근 시간']},
+    {key:'hours',label:'근무시간(h)',hints:['근무시간','총시간','hours','work','시간수','근로시간','실근무']},
   ];
   colMap={};
-  for(const r of roles){ for(const h of headers){ if(r.hints.some(hint=>h.toLowerCase().includes(hint.toLowerCase()))){colMap[r.key]=h;break;} } }
+  for(const r of roles){ for(const h of headers){ if(r.hints.some(hint=>h.toLowerCase().replace(/\s/g,'').includes(hint.toLowerCase().replace(/\s/g,'')))){colMap[r.key]=h;break;} } }
   document.getElementById('col-map-grid').innerHTML=roles.map(r=>`
     <div>
       <label>${r.label}</label>
@@ -496,7 +476,6 @@ function loadFile(file){
 }
 
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0]) loadFile(e.target.files[0]);});
-
 const uz=document.getElementById('upload-zone');
 uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover');});
 uz.addEventListener('dragleave',()=>uz.classList.remove('dragover'));
@@ -533,14 +512,19 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     ['weekly','monthly','detail','chart'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===btn.dataset.tab?'block':'none';});
-    if(btn.dataset.tab==='chart') renderCharts(document.getElementById('filter-name-chart').value);
+    if(btn.dataset.tab==='chart') renderCharts(document.getElementById('fc-name').value);
   });
 });
 
-['filter-name','filter-month','filter-weekly-over'].forEach(id=>document.getElementById(id).addEventListener('change',renderWeekly));
-['filter-name2','filter-from','filter-to'].forEach(id=>document.getElementById(id).addEventListener('change',renderDetail));
-['filter-monthly-name','filter-monthly-over'].forEach(id=>document.getElementById(id).addEventListener('change',renderMonthly));
-document.getElementById('filter-name-chart').addEventListener('change',e=>renderCharts(e.target.value));
+document.getElementById('fw-name').addEventListener('change',renderWeekly);
+document.getElementById('fw-month').addEventListener('change',renderWeekly);
+document.getElementById('fw-over').addEventListener('change',renderWeekly);
+document.getElementById('fm-name').addEventListener('change',renderMonthly);
+document.getElementById('fm-over').addEventListener('change',renderMonthly);
+document.getElementById('fd-name').addEventListener('change',renderDetail);
+document.getElementById('fd-from').addEventListener('change',renderDetail);
+document.getElementById('fd-to').addEventListener('change',renderDetail);
+document.getElementById('fc-name').addEventListener('change',e=>renderCharts(e.target.value));
 
 document.getElementById('export-btn').addEventListener('click',()=>{
   const wb=XLSX.utils.book_new();
