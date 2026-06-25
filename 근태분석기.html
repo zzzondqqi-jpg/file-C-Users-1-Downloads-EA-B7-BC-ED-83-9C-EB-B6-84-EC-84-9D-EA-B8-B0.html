@@ -277,8 +277,15 @@ function analyzeData(){
     const ot=Math.max(0,workH-8);
     const night=(inH!=null&&outH!=null)?calcNight(inH,outH):0;
     const isWeekend=date.getDay()===0||date.getDay()===6;
-    const isLate=(!isWeekend && inH!=null && inH>9.0);
-    parsedRecords.push({name,date,inH,outH,workH,ot,night,isWeekend,isLate,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
+    // 출근시간 직접 파싱 재시도 (inH가 null인 경우 대비)
+    let inHraw=inH;
+    if(inHraw==null && colMap.inTime){
+      const raw=String(row[colMap.inTime]||'').trim();
+      const m=raw.match(/(\d{1,2}):(\d{2})/);
+      if(m) inHraw=parseInt(m[1])+parseInt(m[2])/60;
+    }
+    const isLate=(!isWeekend && inHraw!=null && inHraw>9.0);
+    parsedRecords.push({name,date,inH:inHraw??inH,outH,workH,ot,night,isWeekend,isLate,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
   }
   if(!parsedRecords.length){ alert('분석 가능한 데이터가 없습니다. 컬럼 매핑을 다시 확인해주세요.'); return; }
 
