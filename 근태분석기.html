@@ -1,1 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>근태 분석기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif; background: #f5f5f7; color: #1d1d1f; font-size: 14px; }
 
+.app-header { background: #0A1628; padding: 16px 32px; display: flex; align-items: center; gap: 12px; }
+.app-header .logo { width: 8px; height: 32px; background: #3B82F6; border-radius: 2px; }
+.app-header h1 { color: #fff; font-size: 18px; font-weight: 600; }
+.app-header .sub { color: #94a3b8; font-size: 13px; margin-left: auto; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+.upload-zone {
+  border: 2px dashed #c7d2fe;
+  border-radius: 12px;
+  padding: 48px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  background: #fff;
+  margin-bottom: 20px;
+}
+.upload-zone:hover { background: #f0f4ff; border-color: #818cf8; }
+.upload-zone.dragover { border-color: #3B82F6; background: #eff6ff; }
+.upload-zone .icon { font-size: 48px; margin-bottom: 12px; }
+.upload-zone h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1d1d1f; }
+.upload-zone p { color: #6b7280; font-size: 13px; margin-bottom: 16px; }
+.upload-zone .hint { font-size: 12px; color: #9ca3af; margin-top: 10px; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: background 0.1s; }
+.btn:hover { background: #f3f4f6; }
+.btn-primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+.card { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 20px; margin-bottom: 16px; }
+
+.section-label { font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
+
+.col-map-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.col-map-grid label { font-size: 12px; color: #6b7280; display: block; margin-bottom: 4px; }
+.col-map-grid select { width: 100%; font-size: 13px; padding: 6px 10px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1d1d1f; }
+
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.metric-card { background: #f8faff; border: 1px solid #e0e7ff; border-radius: 10px; padding: 14px 16px; }
+.metric-card .label { font-size: 11px; color: #6b7280; margin-bottom: 6px; font-weight: 500; }
+.metric-card .value { font-size: 26px; font-weight: 600; color: #1d1d1f; line-height: 1; }
+.metric-card .value span { font-size: 14px; font-weight: 400; color: #6b7280; }
+.metric-card .sub { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.metric-card.warn .value { color: #dc2626; }
+.metric-card.ok .value { color: #16a34a; }
+
+.tab-bar { display: flex; gap: 2px; border-bottom: 1px solid #e5e7eb; margin-bottom: 16px; }
+.tab-btn { font-size: 13px; padding: 8px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; color: #6b7280; margin-bottom: -1px; font-weight: 500; transition: color 0.1s; }
+.tab-btn:hover { color: #1d1d1f; }
+.tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+
+.filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.filter-bar label { font-size: 12px; color: #6b7280; font-weight: 500; }
+.filter-bar select, .filter-bar input { font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #1d1d1f; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 580px; }
+thead th { text-align: left; padding: 9px 12px; font-weight: 600; font-size: 11px; color: #6b7280; background: #f9fafb; border-bottom: 1px solid #e5e7eb; white-space: nowrap; cursor: pointer; user-select: none; text-transform: uppercase; letter-spacing: 0.04em; }
+thead th:hover { color: #1d1d1f; }
+tbody tr { border-bottom: 1px solid #f3f4f6; }
+tbody tr:hover { background: #f8faff; }
+tbody td { padding: 9px 12px; color: #1d1d1f; white-space: nowrap; }
+
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+.badge-warn { background: #fef3c7; color: #92400e; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-ok { background: #dcfce7; color: #166534; }
+
+.chart-wrap { position: relative; width: 100%; height: 240px; margin-bottom: 20px; }
+
+.empty-state { text-align: center; padding: 32px; color: #9ca3af; font-size: 13px; }
+
+.legend { display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+.action-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding-top: 16px; border-top: 1px solid #f3f4f6; margin-top: 4px; }
+
+footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="logo"></div>
+  <h1>근태 분석기</h1>
+  <span class="sub">메가인포에셋 인사팀</span>
+</div>
+
+<div class="container">
+
+  <div id="upload-section">
+    <div id="upload-zone" class="upload-zone">
+      <div class="icon">📊</div>
+      <h2>근태 출퇴근기록 파일 업로드</h2>
+      <p>.xlsx / .xls / .csv 형식 지원 · 드래그 앤 드롭 가능</p>
+      <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">파일 선택</button>
+      <div class="hint">파일은 브라우저 내에서만 처리되며 외부로 전송되지 않습니다</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div id="col-map-section" style="display:none;" class="card">
+      <div class="section-label">컬럼 매핑 — 각 항목에 해당하는 열을 선택하세요</div>
+      <div class="col-map-grid" id="col-map-grid"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="analyze-btn">분석 실행 →</button>
+        <button class="btn" id="sample-btn">샘플 데이터로 체험</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="results" style="display:none;">
+    <div class="section-label">요약</div>
+    <div class="metric-grid" id="summary-cards"></div>
+
+    <div class="card">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="weekly">주별 현황</button>
+        <button class="tab-btn" data-tab="monthly">월별 집계</button>
+        <button class="tab-btn" data-tab="detail">상세 기록</button>
+        <button class="tab-btn" data-tab="chart">차트</button>
+      </div>
+
+      <div id="tab-weekly">
+        <div class="filter-bar">
+          <label>이름</label>
+          <select id="filter-name"></select>
+          <label>월</label>
+          <select id="filter-month"></select>
+          <label>52h 한도</label>
+          <select id="filter-weekly-over">
+            <option value="">전체</option>
+            <option value="over">초과만</option>
+            <option value="ok">정상만</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>이름</th><th>주차</th><th>근무일수</th>
+              <th>주 총근로</th><th>주 연장근로</th><th>야간근로</th><th>52h 한도</th>
+            </tr></thead>
+            <tbody id="weekly-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-monthly" style="display:none;">
+        <div class="filter-bar">
+          <label>이름</label>
+          <select id="filter-monthly-name"></select>
+          <label>초과주 여부</label>
+          <select id="filter-monthly-over">
+            <option value="">전체</option>
+            <option value="over">초과 있음</option>
+            <option value="ok">초과 없음</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>이름</th><th>년월</th><th>근무일수</th>
+              <th>월 총근로(h)</th><th>월 연장근로(h)</th><th>야간근로(h)</th><th>법정한도 초과주</th>
+            </tr></thead>
+            <tbody id="monthly-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-detail" style="display:none;">
+        <div class="filter-bar">
+          <label>이름</label>
+          <select id="filter-name2"></select>
+          <input type="date" id="filter-from">
+          <span style="color:#9ca3af;">~</span>
+          <input type="date" id="filter-to">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>이름</th><th>날짜</th><th>출근</th><th>퇴근</th>
+              <th>근무(h)</th><th>연장(h)</th><th>야간(h)</th><th>비고</th>
+            </tr></thead>
+            <tbody id="detail-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-chart" style="display:none;">
+        <div class="filter-bar">
+          <label>이름</label>
+          <select id="filter-name-chart"></select>
+        </div>
+        <div class="section-label" style="margin-top:8px;">월별 근로시간 추이</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span>총 근로</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#ef4444; opacity:.6;"></span>연장근로</span>
+        </div>
+        <div class="chart-wrap"><canvas id="lineChart" role="img" aria-label="월별 근로시간 추이"></canvas></div>
+        <div class="section-label">주별 연장근로</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#bfdbfe;"></span>주 총근로</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#fca5a5;"></span>연장(40h 초과)</span>
+        </div>
+        <div class="chart-wrap"><canvas id="barChart" role="img" aria-label="주별 연장근로"></canvas></div>
+
+        <div class="section-label" style="margin-top:8px; color:#991b1b;">⚠ 주 52시간 초과 내역</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>이름</th><th>주차</th><th>근무일수</th><th>주 총근로</th><th>초과시간(52h 기준)</th><th>야간근로</th>
+            </tr></thead>
+            <tbody id="over52-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="action-bar">
+        <button class="btn btn-primary btn-sm" id="export-btn">⬇ 결과 엑셀 다운로드</button>
+        <button class="btn btn-sm" id="reset-btn">↩ 다시 업로드</button>
+        <span style="font-size:11px; color:#9ca3af; margin-left:4px;">* 주 52h = 법정 40h + 연장한도 12h</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+<footer>메가인포에셋 인사팀 · 근태 분석기 v1.0 · 모든 데이터는 브라우저 내에서만 처리됩니다</footer>
+
+<script>
+let rawRows=[], headers=[], colMap={}, parsedRecords=[], weeklyData=[], monthlyData=[];
+let lineChart=null, barChart=null;
+
+function parseTime(v){
+  if(!v && v!==0) return null;
+  if(typeof v==='number'){ const t=Math.round(v*24*60); return {h:Math.floor(t/60),m:t%60}; }
+  const s=String(v).trim();
+  const m=s.match(/(\d{1,2}):(\d{2})/);
+  if(m) return {h:parseInt(m[1]),m:parseInt(m[2])};
+  return null;
+}
+function timeToDecimal(t){ return t ? t.h+t.m/60 : null; }
+function parseDate(v){
+  if(!v) return null;
+  if(typeof v==='number'){ const d=XLSX.SSF.parse_date_code(v); if(d) return new Date(d.y,d.m-1,d.d); }
+  const s=String(v).trim();
+  let m=s.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]);
+  m=s.match(/(\d{1,2})[-./](\d{1,2})[-./](\d{4})/);
+  if(m) return new Date(+m[3],+m[1]-1,+m[2]);
+  const d=new Date(s); return isNaN(d)?null:d;
+}
+function fmtDate(d){ return d?d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'):''; }
+function fmtHM(h){ if(h==null) return '-'; const hh=Math.floor(h); const mm=Math.round((h-hh)*60); return hh+':'+String(mm).padStart(2,'0'); }
+function getWeekKey(d){
+  const y=d.getFullYear(), jan1=new Date(y,0,1);
+  const w=Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
+  return y+'년 '+w+'주';
+}
+function getMonthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function calcNight(inH,outH){
+  if(inH==null||outH==null) return 0;
+  let n=0, step=1/60;
+  for(let h=inH;h<outH;h+=step){ const hh=h%24; if(hh>=22||hh<6) n+=step; }
+  return Math.round(n*60)/60;
+}
+
+function analyzeData(){
+  parsedRecords=[];
+  for(const row of rawRows){
+    const name = colMap.name ? String(row[colMap.name]||'').trim() : '직원';
+    if(!name||name==='undefined'||name==='') continue;
+    const date = parseDate(row[colMap.date]);
+    if(!date) continue;
+    let workH=null, inH=null, outH=null;
+    if(colMap.inTime&&colMap.outTime){
+      inH=timeToDecimal(parseTime(row[colMap.inTime]));
+      outH=timeToDecimal(parseTime(row[colMap.outTime]));
+      if(inH!=null&&outH!=null){ workH=outH>inH?outH-inH:(outH+24-inH); workH=Math.max(0,workH-1); }
+    }
+    if(workH==null&&colMap.hours){ const hv=parseFloat(row[colMap.hours]); if(!isNaN(hv)) workH=hv; }
+    if(workH==null) continue;
+    const ot=Math.max(0,workH-8);
+    const night=(inH!=null&&outH!=null)?calcNight(inH,outH):0;
+    const isWeekend=date.getDay()===0||date.getDay()===6;
+    parsedRecords.push({name,date,inH,outH,workH,ot,night,isWeekend,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
+  }
+  if(!parsedRecords.length){ alert('분석 가능한 데이터가 없습니다. 컬럼 매핑을 다시 확인해주세요.'); return; }
+
+  const weekMap={}, monthMap={};
+  for(const r of parsedRecords){
+    const wk=r.name+'||'+r.weekKey;
+    if(!weekMap[wk]) weekMap[wk]={name:r.name,week:r.weekKey,days:0,total:0,ot:0,night:0};
+    if(!r.isWeekend){weekMap[wk].days++;weekMap[wk].total+=r.workH;}
+    weekMap[wk].ot+=r.ot; weekMap[wk].night+=r.night;
+    const mk=r.name+'||'+r.monthKey;
+    if(!monthMap[mk]) monthMap[mk]={name:r.name,month:r.monthKey,days:0,total:0,ot:0,night:0};
+    if(!r.isWeekend){monthMap[mk].days++;} monthMap[mk].total+=r.workH; monthMap[mk].ot+=r.ot; monthMap[mk].night+=r.night;
+  }
+  weeklyData=Object.values(weekMap);
+  for(const w of weeklyData){ w.totalOT=Math.max(0,w.total-40); w.over52=w.total>52; }
+  monthlyData=Object.values(monthMap);
+  for(const m of monthlyData){ m.overDays=weeklyData.filter(w=>w.name===m.name&&w.week.startsWith(m.month.split('-')[0]+'년')&&w.over52).length; }
+  renderResults();
+}
+
+function renderResults(){
+  document.getElementById('upload-section').style.display='none';
+  document.getElementById('results').style.display='block';
+  const names=[...new Set(parsedRecords.map(r=>r.name))];
+  const months=[...new Set(parsedRecords.map(r=>r.monthKey))].sort();
+
+  ['filter-name','filter-name2','filter-name-chart','filter-monthly-name'].forEach(id=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='<option value="">전체</option>';
+    names.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+  });
+  const ms=document.getElementById('filter-month');
+  ms.innerHTML='<option value="">전체</option>';
+  months.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;ms.appendChild(o);});
+
+  renderSummary(); renderWeekly(); renderMonthly(); renderDetail(); renderCharts('');
+}
+
+function renderSummary(){
+  const tH=parsedRecords.reduce((a,r)=>a+r.workH,0);
+  const tOT=parsedRecords.reduce((a,r)=>a+r.ot,0);
+  const tN=parsedRecords.reduce((a,r)=>a+r.night,0);
+  const over52=weeklyData.filter(w=>w.over52).length;
+  const names=[...new Set(parsedRecords.map(r=>r.name))];
+  const avgW=weeklyData.length?weeklyData.reduce((a,w)=>a+w.total,0)/weeklyData.length:0;
+  document.getElementById('summary-cards').innerHTML=`
+    <div class="metric-card"><div class="label">총 근로시간</div><div class="value">${tH.toFixed(0)}<span>h</span></div><div class="sub">전체 기간 합계</div></div>
+    <div class="metric-card ${tOT>0?'warn':''}"><div class="label">총 연장근로</div><div class="value">${tOT.toFixed(1)}<span>h</span></div><div class="sub">일 8h 초과분</div></div>
+    <div class="metric-card"><div class="label">야간근로</div><div class="value">${tN.toFixed(1)}<span>h</span></div><div class="sub">22:00~06:00</div></div>
+    <div class="metric-card ${over52>0?'warn':'ok'}"><div class="label">52h 초과 주</div><div class="value">${over52}<span>건</span></div><div class="sub">법정한도 초과</div></div>
+    <div class="metric-card"><div class="label">주 평균근로</div><div class="value">${avgW.toFixed(1)}<span>h</span></div><div class="sub">1주 기준</div></div>
+    <div class="metric-card ok"><div class="label">분석 인원</div><div class="value">${names.length}<span>명</span></div><div class="sub">${parsedRecords.length}건 레코드</div></div>
+  `;
+}
+
+function renderWeekly(){
+  const nm=document.getElementById('filter-name').value;
+  const mo=document.getElementById('filter-month').value;
+  const ov=document.getElementById('filter-weekly-over').value;
+  let data=weeklyData;
+  if(nm) data=data.filter(w=>w.name===nm);
+  if(mo) data=data.filter(w=>w.week.startsWith(mo.split('-')[0]+'년'));
+  if(ov==='over') data=data.filter(w=>w.over52);
+  if(ov==='ok') data=data.filter(w=>!w.over52);
+  const tb=document.getElementById('weekly-body');
+  if(!data.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">데이터 없음</td></tr>';return;}
+  tb.innerHTML=data.map(w=>`<tr>
+    <td>${w.name}</td><td>${w.week}</td><td>${w.days}일</td>
+    <td><b>${w.total.toFixed(1)}h</b></td>
+    <td>${w.totalOT.toFixed(1)}h</td>
+    <td>${w.night.toFixed(1)}h</td>
+    <td>${w.over52?'<span class="badge badge-danger">초과</span>':'<span class="badge badge-ok">정상</span>'}</td>
+  </tr>`).join('');
+}
+
+function renderMonthly(){
+  const nm=document.getElementById('filter-monthly-name').value;
+  const ov=document.getElementById('filter-monthly-over').value;
+  let data=monthlyData;
+  if(nm) data=data.filter(m=>m.name===nm);
+  if(ov==='over') data=data.filter(m=>m.overDays>0);
+  if(ov==='ok') data=data.filter(m=>m.overDays===0);
+  const tb=document.getElementById('monthly-body');
+  tb.innerHTML=data.map(m=>`<tr>
+    <td>${m.name}</td><td>${m.month}</td><td>${m.days}일</td>
+    <td><b>${m.total.toFixed(1)}</b></td>
+    <td>${m.ot.toFixed(1)}</td>
+    <td>${m.night.toFixed(1)}</td>
+    <td>${m.overDays>0?'<span class="badge badge-warn">'+m.overDays+'주</span>':'<span class="badge badge-ok">없음</span>'}</td>
+  </tr>`).join('') || '<tr><td colspan="7" class="empty-state">데이터 없음</td></tr>';
+}
+
+function renderDetail(){
+  const nm=document.getElementById('filter-name2').value;
+  const from=document.getElementById('filter-from').value;
+  const to=document.getElementById('filter-to').value;
+  let data=parsedRecords.slice().sort((a,b)=>a.date-b.date);
+  if(nm) data=data.filter(r=>r.name===nm);
+  if(from) data=data.filter(r=>fmtDate(r.date)>=from);
+  if(to) data=data.filter(r=>fmtDate(r.date)<=to);
+  const tb=document.getElementById('detail-body');
+  const days=['일','월','화','수','목','금','토'];
+  if(!data.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">데이터 없음</td></tr>';return;}
+  tb.innerHTML=data.map(r=>`<tr>
+    <td>${r.name}</td>
+    <td>${fmtDate(r.date)} (${days[r.date.getDay()]})</td>
+    <td>${fmtHM(r.inH)}</td><td>${fmtHM(r.outH)}</td>
+    <td>${r.workH.toFixed(1)}h</td>
+    <td>${r.ot.toFixed(1)}h</td>
+    <td>${r.night.toFixed(1)}h</td>
+    <td>${r.isWeekend?'<span class="badge badge-warn">휴일</span>':r.ot>0?'<span class="badge badge-ok">연장</span>':''}</td>
+  </tr>`).join('');
+}
+
+function renderCharts(nm){
+  const months=[...new Set(parsedRecords.map(r=>r.monthKey))].sort();
+  let mData,wData;
+  if(nm){
+    mData=monthlyData.filter(m=>m.name===nm).sort((a,b)=>a.month.localeCompare(b.month));
+    wData=weeklyData.filter(w=>w.name===nm).slice(-14);
+  } else {
+    mData=months.map(m=>{ const rows=monthlyData.filter(r=>r.month===m); const n=Math.max(rows.length,1);
+      return {month:m,total:rows.reduce((a,r)=>a+r.total,0)/n,ot:rows.reduce((a,r)=>a+r.ot,0)/n}; });
+    const allWeeks=[...new Set(weeklyData.map(w=>w.week))].sort().slice(-14);
+    wData=allWeeks.map(wk=>{ const rows=weeklyData.filter(r=>r.week===wk); const n=Math.max(rows.length,1);
+      return {week:wk,total:rows.reduce((a,r)=>a+r.total,0)/n,totalOT:rows.reduce((a,r)=>a+r.totalOT,0)/n}; });
+  }
+  if(lineChart) lineChart.destroy();
+  if(barChart) barChart.destroy();
+  lineChart=new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{labels:mData.map(m=>m.month),datasets:[
+      {label:'총 근로',data:mData.map(m=>+m.total.toFixed(1)),borderColor:'#3b82f6',backgroundColor:'#3b82f620',tension:0.3,pointRadius:4,pointBackgroundColor:'#3b82f6'},
+      {label:'연장근로',data:mData.map(m=>+m.ot.toFixed(1)),borderColor:'#ef4444',backgroundColor:'#ef444415',tension:0.3,borderDash:[5,3],pointRadius:4,pointBackgroundColor:'#ef4444'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'h'}}}}
+  });
+  barChart=new Chart(document.getElementById('barChart'),{
+    type:'bar',
+    data:{labels:wData.map(w=>w.week||w.name),datasets:[
+      {label:'주 총근로',data:wData.map(w=>+(w.total||0).toFixed(1)),backgroundColor:'#bfdbfe'},
+      {label:'주 연장',data:wData.map(w=>+(w.totalOT||0).toFixed(1)),backgroundColor:'#fca5a5'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxRotation:45,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:v=>v+'h'}}}}
+  });
+
+  const over52 = nm ? weeklyData.filter(w=>w.name===nm&&w.over52) : weeklyData.filter(w=>w.over52);
+  const ob = document.getElementById('over52-body');
+  if(!over52.length){
+    ob.innerHTML='<tr><td colspan="6" class="empty-state" style="color:#16a34a;">✓ 52시간 초과 내역 없음</td></tr>';
+  } else {
+    ob.innerHTML=over52.map(w=>`<tr style="background:#fff5f5;">
+      <td><b>${w.name}</b></td>
+      <td>${w.week}</td>
+      <td>${w.days}일</td>
+      <td><b style="color:#dc2626;">${w.total.toFixed(1)}h</b></td>
+      <td><span class="badge badge-danger">+${(w.total-52).toFixed(1)}h 초과</span></td>
+      <td>${w.night.toFixed(1)}h</td>
+    </tr>`).join('');
+  }
+}
+
+function buildColMapUI(){
+  const roles=[
+    {key:'name',label:'이름 / 사번',hints:['이름','성명','사번','직원','name','employee']},
+    {key:'date',label:'날짜 ★',hints:['날짜','일자','date','근무일']},
+    {key:'inTime',label:'출근시간',hints:['출근','in','start','출근시각','시작']},
+    {key:'outTime',label:'퇴근시간',hints:['퇴근','out','end','퇴근시각','종료']},
+    {key:'hours',label:'근무시간(h)',hints:['근무시간','총시간','hours','work','시간수','근로시간']},
+  ];
+  colMap={};
+  for(const r of roles){ for(const h of headers){ if(r.hints.some(hint=>h.toLowerCase().includes(hint.toLowerCase()))){colMap[r.key]=h;break;} } }
+  document.getElementById('col-map-grid').innerHTML=roles.map(r=>`
+    <div>
+      <label>${r.label}</label>
+      <select id="cm-${r.key}">
+        <option value="">-- 선택 --</option>
+        ${headers.map(h=>`<option value="${h}"${colMap[r.key]===h?' selected':''}>${h}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  document.getElementById('col-map-section').style.display='block';
+}
+
+function loadFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      let wb;
+      if(file.name.endsWith('.csv')) wb=XLSX.read(e.target.result,{type:'binary'});
+      else wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const json=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!json.length){alert('데이터가 없습니다.');return;}
+      rawRows=json; headers=Object.keys(json[0]); buildColMapUI();
+    }catch(err){alert('파일 읽기 오류: '+err.message);}
+  };
+  if(file.name.endsWith('.csv')) reader.readAsBinaryString(file);
+  else reader.readAsArrayBuffer(file);
+}
+
+document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files[0]) loadFile(e.target.files[0]);});
+
+const uz=document.getElementById('upload-zone');
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('dragover'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('dragover');if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);});
+
+document.getElementById('analyze-btn').addEventListener('click',()=>{
+  ['name','date','inTime','outTime','hours'].forEach(k=>{const el=document.getElementById('cm-'+k);if(el) colMap[k]=el.value||null;});
+  if(!colMap.date){alert('날짜 컬럼은 필수입니다.');return;}
+  if(!colMap.hours&&(!colMap.inTime||!colMap.outTime)){alert('출퇴근시간 또는 근무시간 컬럼을 선택해주세요.');return;}
+  analyzeData();
+});
+
+document.getElementById('sample-btn').addEventListener('click',()=>{
+  const names=['김민준','이서연','박도현','최지우'];
+  rawRows=[];
+  const start=new Date(2026,0,2);
+  for(let d=0;d<150;d++){
+    const dt=new Date(start);dt.setDate(dt.getDate()+d);
+    if(dt.getDay()===0||dt.getDay()===6) continue;
+    for(const name of names){
+      const inH=8.5+(Math.random()*1.5-0.5);
+      const wk=8+Math.random()*3.5;
+      const outH=inH+wk+1;
+      rawRows.push({이름:name,날짜:fmtDate(dt),출근:fmtHM(inH),퇴근:fmtHM(outH)});
+    }
+  }
+  headers=['이름','날짜','출근','퇴근'];
+  colMap={name:'이름',date:'날짜',inTime:'출근',outTime:'퇴근'};
+  analyzeData();
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['weekly','monthly','detail','chart'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===btn.dataset.tab?'block':'none';});
+    if(btn.dataset.tab==='chart') renderCharts(document.getElementById('filter-name-chart').value);
+  });
+});
+
+['filter-name','filter-month','filter-weekly-over'].forEach(id=>document.getElementById(id).addEventListener('change',renderWeekly));
+['filter-name2','filter-from','filter-to'].forEach(id=>document.getElementById(id).addEventListener('change',renderDetail));
+['filter-monthly-name','filter-monthly-over'].forEach(id=>document.getElementById(id).addEventListener('change',renderMonthly));
+document.getElementById('filter-name-chart').addEventListener('change',e=>renderCharts(e.target.value));
+
+document.getElementById('export-btn').addEventListener('click',()=>{
+  const wb=XLSX.utils.book_new();
+  const wrows=[['이름','주차','근무일수','주 총근로(h)','주 연장(h)','야간(h)','52h초과']];
+  weeklyData.forEach(w=>wrows.push([w.name,w.week,w.days,+w.total.toFixed(1),+w.totalOT.toFixed(1),+w.night.toFixed(1),w.over52?'초과':'정상']));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(wrows),'주별분석');
+  const mrows=[['이름','년월','근무일수','월 총근로(h)','월 연장(h)','야간(h)','초과주수']];
+  monthlyData.forEach(m=>mrows.push([m.name,m.month,m.days,+m.total.toFixed(1),+m.ot.toFixed(1),+m.night.toFixed(1),m.overDays]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(mrows),'월별분석');
+  const drows=[['이름','날짜','출근','퇴근','근무(h)','연장(h)','야간(h)','비고']];
+  parsedRecords.sort((a,b)=>a.date-b.date).forEach(r=>drows.push([r.name,fmtDate(r.date),fmtHM(r.inH),fmtHM(r.outH),+r.workH.toFixed(1),+r.ot.toFixed(1),+r.night.toFixed(1),r.isWeekend?'휴일':r.ot>0?'연장근로':'']));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(drows),'상세기록');
+  XLSX.writeFile(wb,'근태분석결과_'+new Date().toISOString().slice(0,10)+'.xlsx');
+});
+
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  document.getElementById('results').style.display='none';
+  document.getElementById('upload-section').style.display='block';
+  document.getElementById('col-map-section').style.display='none';
+  document.getElementById('fileInput').value='';
+  rawRows=[];parsedRecords=[];weeklyData=[];monthlyData=[];
+});
+</script>
+</body>
+</html>
