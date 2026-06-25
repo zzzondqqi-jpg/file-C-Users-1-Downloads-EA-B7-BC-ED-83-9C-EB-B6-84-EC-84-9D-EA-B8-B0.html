@@ -159,6 +159,12 @@ footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
           <input type="date" id="fd-from">
           <span style="color:#9ca3af;">~</span>
           <input type="date" id="fd-to">
+          <label>지각</label>
+          <select id="fd-late">
+            <option value="">전체</option>
+            <option value="late">지각만</option>
+            <option value="ok">정상만</option>
+          </select>
         </div>
         <div class="table-wrap">
           <table>
@@ -270,7 +276,8 @@ function analyzeData(){
     const ot=Math.max(0,workH-8);
     const night=(inH!=null&&outH!=null)?calcNight(inH,outH):0;
     const isWeekend=date.getDay()===0||date.getDay()===6;
-    parsedRecords.push({name,date,inH,outH,workH,ot,night,isWeekend,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
+    const isLate=(!isWeekend && inH!=null && inH>9);
+    parsedRecords.push({name,date,inH,outH,workH,ot,night,isWeekend,isLate,weekKey:getWeekKey(date),monthKey:getMonthKey(date)});
   }
   if(!parsedRecords.length){ alert('분석 가능한 데이터가 없습니다. 컬럼 매핑을 다시 확인해주세요.'); return; }
 
@@ -321,11 +328,13 @@ function renderSummary(){
   const over52=weeklyData.filter(w=>w.over52).length;
   const names=[...new Set(parsedRecords.map(r=>r.name))];
   const avgW=weeklyData.length?weeklyData.reduce((a,w)=>a+w.total,0)/weeklyData.length:0;
+  const lateCount=parsedRecords.filter(r=>r.isLate).length;
   document.getElementById('summary-cards').innerHTML=`
     <div class="metric-card"><div class="label">총 근로시간</div><div class="value">${tH.toFixed(0)}<span>h</span></div><div class="sub">전체 기간 합계</div></div>
     <div class="metric-card ${tOT>0?'warn':''}"><div class="label">총 연장근로</div><div class="value">${tOT.toFixed(1)}<span>h</span></div><div class="sub">일 8h 초과분</div></div>
     <div class="metric-card"><div class="label">야간근로</div><div class="value">${tN.toFixed(1)}<span>h</span></div><div class="sub">22:00~06:00</div></div>
     <div class="metric-card ${over52>0?'warn':'ok'}"><div class="label">52h 초과 주</div><div class="value">${over52}<span>건</span></div><div class="sub">법정한도 초과</div></div>
+    <div class="metric-card ${lateCount>0?'warn':'ok'}"><div class="label">지각</div><div class="value">${lateCount}<span>건</span></div><div class="sub">09:00 초과 출근</div></div>
     <div class="metric-card"><div class="label">주 평균근로</div><div class="value">${avgW.toFixed(1)}<span>h</span></div><div class="sub">1주 기준</div></div>
     <div class="metric-card ok"><div class="label">분석 인원</div><div class="value">${names.length}<span>명</span></div><div class="sub">${parsedRecords.length}건 레코드</div></div>
   `;
@@ -373,22 +382,32 @@ function renderDetail(){
   const nm=document.getElementById('fd-name').value;
   const from=document.getElementById('fd-from').value;
   const to=document.getElementById('fd-to').value;
+  const lt=document.getElementById('fd-late').value;
   let data=parsedRecords.slice().sort((a,b)=>a.date-b.date);
   if(nm) data=data.filter(r=>r.name===nm);
   if(from) data=data.filter(r=>fmtDate(r.date)>=from);
   if(to) data=data.filter(r=>fmtDate(r.date)<=to);
+  if(lt==='late') data=data.filter(r=>r.isLate);
+  if(lt==='ok') data=data.filter(r=>!r.isLate&&!r.isWeekend);
   const tb=document.getElementById('detail-body');
   const days=['일','월','화','수','목','금','토'];
   if(!data.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">데이터 없음</td></tr>';return;}
-  tb.innerHTML=data.map(r=>`<tr>
-    <td>${r.name}</td>
-    <td>${fmtDate(r.date)} (${days[r.date.getDay()]})</td>
-    <td>${fmtHM(r.inH)}</td><td>${fmtHM(r.outH)}</td>
-    <td>${r.workH.toFixed(1)}h</td>
-    <td>${r.ot.toFixed(1)}h</td>
-    <td>${r.night.toFixed(1)}h</td>
-    <td>${r.isWeekend?'<span class="badge badge-warn">휴일</span>':r.ot>0?'<span class="badge badge-ok">연장</span>':''}</td>
-  </tr>`).join('');
+  tb.innerHTML=data.map(r=>{
+    let note='';
+    if(r.isWeekend) note='<span class="badge badge-warn">휴일</span>';
+    else if(r.isLate) note='<span class="badge badge-danger">지각</span>';
+    else if(r.ot>0) note='<span class="badge badge-ok">연장</span>';
+    return `<tr${r.isLate?' style="background:#fff5f5;"':''}>
+      <td>${r.name}</td>
+      <td>${fmtDate(r.date)} (${days[r.date.getDay()]})</td>
+      <td${r.isLate?' style="color:#dc2626;font-weight:600;"':''}>${fmtHM(r.inH)}</td>
+      <td>${fmtHM(r.outH)}</td>
+      <td>${r.workH.toFixed(1)}h</td>
+      <td>${r.ot.toFixed(1)}h</td>
+      <td>${r.night.toFixed(1)}h</td>
+      <td>${note}</td>
+    </tr>`;
+  }).join('');
 }
 
 function renderCharts(nm){
@@ -524,6 +543,7 @@ document.getElementById('fm-over').addEventListener('change',renderMonthly);
 document.getElementById('fd-name').addEventListener('change',renderDetail);
 document.getElementById('fd-from').addEventListener('change',renderDetail);
 document.getElementById('fd-to').addEventListener('change',renderDetail);
+document.getElementById('fd-late').addEventListener('change',renderDetail);
 document.getElementById('fc-name').addEventListener('change',e=>renderCharts(e.target.value));
 
 document.getElementById('export-btn').addEventListener('click',()=>{
