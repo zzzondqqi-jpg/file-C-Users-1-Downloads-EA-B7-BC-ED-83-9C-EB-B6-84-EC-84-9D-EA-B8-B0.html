@@ -165,6 +165,8 @@ footer { text-align: center; padding: 28px; color: var(--text3); font-size: 11px
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
         <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">파일 선택 (여러 개 가능)</button>
         <button class="btn" id="accum-view-btn">📁 누적 데이터 바로보기</button>
+        <button class="btn" id="accum-import-main-btn" style="border-color:#2563eb;color:#2563eb;">📥 데이터 가져오기</button>
+        <input type="file" id="accum-import-main-file" accept=".json" style="display:none">
       </div>
       <div class="upload-hint">근태파일 여러 달 동시 선택 가능 · 시차출퇴근/미집계 파일도 함께 선택 후 종류 지정</div>
       <div id="file-list" style="margin-top:16px; width:100%; max-width:700px; margin-left:auto; margin-right:auto;"></div>
@@ -1078,6 +1080,28 @@ window.addEventListener('DOMContentLoaded', ()=>{
   excludeNames = loadExclude();
 });
 
+// 메인 화면 데이터 가져오기
+document.getElementById('accum-import-main-btn').addEventListener('click',()=>{
+  document.getElementById('accum-import-main-file').click();
+});
+document.getElementById('accum-import-main-file').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.monthly) saveAccum(data.monthly);
+      if(data.weekly) saveAccumWeekly(data.weekly);
+      if(data.lateMap){ localStorage.setItem(STORE_LATE_MAP_KEY,JSON.stringify(data.lateMap)); lateStandardMap=data.lateMap; }
+      if(data.exclude){ localStorage.setItem(STORE_EXCLUDE_KEY,JSON.stringify(data.exclude)); excludeNames=new Set(data.exclude); }
+      // 자동으로 바로보기 실행
+      document.getElementById('accum-view-btn').click();
+    }catch(err){ alert('파일 오류: '+err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
 document.getElementById('fileInput').addEventListener('change',e=>{if(e.target.files.length)loadFiles(e.target.files);});
 const uz=document.getElementById('upload-zone');
 uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('dragover');});
@@ -1138,12 +1162,15 @@ document.getElementById('fc-name').addEventListener('change',e=>renderCharts(e.t
 // 누적 바로보기
 document.getElementById('accum-view-btn').addEventListener('click',()=>{
   const accum=loadAccum();
-  if(!Object.keys(accum).length){ alert('누적된 데이터가 없습니다.\n파일을 먼저 업로드해주세요.'); return; }
+  if(!Object.keys(accum).length){
+    // 데이터 없으면 가져오기 창 바로 열기
+    document.getElementById('accum-import-main-file').click();
+    return;
+  }
 
   document.getElementById('upload-section').style.display='none';
   document.getElementById('results').style.display='block';
 
-  // 누적 데이터로 드롭다운 채우기
   const accumRows=Object.values(accum);
   const names=[...new Set(accumRows.map(r=>r.name))].sort();
   const months=[...new Set(accumRows.map(r=>r.month))].sort();
@@ -1155,10 +1182,8 @@ document.getElementById('accum-view-btn').addEventListener('click',()=>{
     months.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
   });
 
-  // 요약 갱신
   updateSummary('','');
 
-  // 누적 탭으로 이동
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('[data-tab="accum"]').classList.add('active');
   ['weekly','monthly','detail','chart'].forEach(t=>document.getElementById('tab-'+t).style.display='none');
