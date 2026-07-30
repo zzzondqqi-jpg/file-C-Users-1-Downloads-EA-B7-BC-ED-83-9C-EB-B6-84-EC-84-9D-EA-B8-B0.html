@@ -314,6 +314,9 @@ footer { text-align: center; padding: 28px; color: var(--text3); font-size: 11px
             <div style="font-size:12px; color:var(--text3);">파일을 업로드할 때마다 월별로 자동 누적됩니다. 브라우저를 닫아도 데이터가 유지됩니다.</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-sm" id="accum-export-btn" style="border-color:#2563eb;color:#2563eb;">📤 데이터 내보내기</button>
+            <button class="btn btn-sm" id="accum-import-btn" style="border-color:#2563eb;color:#2563eb;">📥 데이터 가져오기</button>
+            <input type="file" id="accum-import-file" accept=".json" style="display:none">
             <button class="btn btn-sm" id="accum-reanalyze-btn">🔄 현재 결과로 갱신</button>
             <button class="btn btn-sm" id="accum-purge-btn" style="border-color:#F0A04B;color:#7A5700;">🧹 미집계 소급 제거</button>
             <button class="btn btn-danger btn-sm" id="accum-clear-btn">전체 초기화</button>
@@ -1199,6 +1202,46 @@ document.getElementById('accum-purge-btn').addEventListener('click',()=>{
 
   alert(`소급 제거 완료: ${removed}건 삭제`);
   renderAccum();
+});
+
+// 데이터 내보내기
+document.getElementById('accum-export-btn').addEventListener('click',()=>{
+  const data={
+    monthly: loadAccum(),
+    weekly: loadAccumWeekly(),
+    lateMap: loadLateMap(),
+    exclude: [...loadExclude()],
+    exportedAt: new Date().toISOString()
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='근태누적데이터_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// 데이터 가져오기
+document.getElementById('accum-import-btn').addEventListener('click',()=>{
+  document.getElementById('accum-import-file').click();
+});
+document.getElementById('accum-import-file').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(data.monthly) saveAccum(data.monthly);
+      if(data.weekly) saveAccumWeekly(data.weekly);
+      if(data.lateMap){ localStorage.setItem(STORE_LATE_MAP_KEY,JSON.stringify(data.lateMap)); lateStandardMap=data.lateMap; }
+      if(data.exclude){ localStorage.setItem(STORE_EXCLUDE_KEY,JSON.stringify(data.exclude)); excludeNames=new Set(data.exclude); }
+      alert('가져오기 완료!');
+      renderAccum();
+    }catch(err){ alert('파일 오류: '+err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
 });
 
 document.getElementById('accum-reanalyze-btn').addEventListener('click',()=>{
