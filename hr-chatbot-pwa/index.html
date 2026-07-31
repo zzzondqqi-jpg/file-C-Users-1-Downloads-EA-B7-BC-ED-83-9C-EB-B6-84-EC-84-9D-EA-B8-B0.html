@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>메가인포 HR 챗봇</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A1628">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HR챗봇">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --navy:#0A1628;
+    --blue:#3B82F6;
+    --blue-light:#EAF1FE;
+    --ink:#1a2233;
+    --sub:#6b7688;
+    --line:#e6e9ef;
+    --bg:#f5f7fa;
+    --white:#ffffff;
+    --good:#16a34a;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .app{
+    max-width:880px;
+    margin:0 auto;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    background:var(--white);
+    box-shadow:0 0 40px rgba(10,22,40,0.06);
+  }
+  .header{
+    position:relative;
+    background:var(--navy);
+    color:#fff;
+    padding:22px 28px 20px 32px;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .header::before{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:6px;
+    background:var(--blue);
+  }
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .header-title{ font-size:19px; font-weight:700; letter-spacing:-0.2px; }
+  .header-sub{ margin-top:6px; font-size:12.5px; color:#a9b6cc; font-weight:400; }
+  .header-meta{ text-align:right; font-size:11px; color:#8fa0bd; line-height:1.6; white-space:nowrap; padding-top:2px; }
+  .header-meta b{color:#e7edf9;font-weight:600;}
+
+  .install-bar{
+    background:var(--blue);
+    color:#fff;
+    font-size:12.5px;
+    padding:9px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .install-bar span{ flex:1; }
+  .install-bar button{
+    border:none;
+    border-radius:8px;
+    padding:6px 12px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  #installBtn{ background:#fff; color:var(--blue); }
+  .dismiss-btn{ background:rgba(255,255,255,0.18); color:#fff; }
+
+  .disclaimer{
+    background:#fff8e6;
+    border-bottom:1px solid #f2e6bd;
+    color:#8a6d1f;
+    font-size:11.5px;
+    padding:8px 32px;
+    flex-shrink:0;
+  }
+
+  .chat{
+    flex:1;
+    overflow-y:auto;
+    padding:22px 28px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .msg{
+    max-width:84%;
+    padding:12px 15px;
+    border-radius:12px;
+    font-size:14.5px;
+    line-height:1.66;
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .msg.user{
+    align-self:flex-end;
+    background:var(--blue);
+    color:#fff;
+    border-bottom-right-radius:3px;
+  }
+  .msg.bot{
+    align-self:flex-start;
+    background:var(--bg);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-bottom-left-radius:3px;
+  }
+  .msg.bot .cite{
+    display:inline-block;
+    margin-top:2px;
+    font-size:12px;
+    color:var(--blue);
+    background:var(--blue-light);
+    padding:1px 6px;
+    border-radius:4px;
+  }
+  .msg strong{ color:var(--navy); }
+  .bot-label{
+    font-size:11px; font-weight:700; color:var(--blue);
+    margin-bottom:5px; display:flex; align-items:center; gap:5px;
+  }
+  .bot-label .dot{ width:6px;height:6px;border-radius:50%;background:var(--good); display:inline-block; }
+  .related{
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .related-chip{
+    background:#fff;
+    border:1px solid #cfe0fb;
+    color:var(--blue);
+    font-size:11.5px;
+    padding:5px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    font-weight:500;
+  }
+  .related-chip:hover{ background:var(--blue); color:#fff; }
+
+  .welcome{
+    background:var(--blue-light);
+    border:1px solid #d7e6fd;
+    border-radius:12px;
+    padding:16px 18px;
+    font-size:13.5px;
+    color:#2b4a7e;
+    line-height:1.7;
+  }
+  .welcome b{color:var(--navy);}
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .chip{
+    background:#fff; border:1px solid #cfe0fb; color:var(--blue);
+    font-size:12.5px; padding:7px 12px; border-radius:999px;
+    cursor:pointer; transition:all .15s ease; font-weight:500;
+  }
+  .chip:hover{ background:var(--blue); color:#fff; }
+
+  .inputbar{ flex-shrink:0; border-top:1px solid var(--line); padding:14px 20px 18px; background:#fff; }
+  .inputrow{ display:flex; gap:10px; align-items:flex-end; }
+  textarea{
+    flex:1; resize:none; border:1.5px solid var(--line); border-radius:12px;
+    padding:11px 14px; font-size:14px; font-family:inherit; max-height:120px;
+    outline:none; transition:border-color .15s; line-height:1.5;
+  }
+  textarea:focus{ border-color:var(--blue); }
+  .send-btn{
+    flex-shrink:0; background:var(--navy); color:#fff; border:none; border-radius:10px;
+    width:46px; height:46px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background .15s;
+  }
+  .send-btn:hover:not(:disabled){ background:var(--blue); }
+  .send-btn:disabled{ opacity:.4; cursor:not-allowed; }
+  .foot-note{ margin-top:8px; font-size:10.5px; color:var(--sub); text-align:center; }
+
+  .chat::-webkit-scrollbar{width:8px;}
+  .chat::-webkit-scrollbar-thumb{background:#d7dce4;border-radius:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="header-title">메가인포 HR 챗봇</div>
+        <div class="header-sub">취업규칙 · 인사관리규정 기반 사내 규정 안내</div>
+      </div>
+      <div class="header-meta">
+        인사팀 · HR Chatbot<br>
+        <b>기준일 2026.08.01 개정본</b>
+      </div>
+    </div>
+  </div>
+
+  <div id="installBar" class="install-bar" style="display:none;">
+    <span>📲 이 챗봇을 앱처럼 설치해서 쓸 수 있어요</span>
+    <button id="installBtn">홈 화면에 추가</button>
+    <button id="installDismiss" class="dismiss-btn">닫기</button>
+  </div>
+
+  <div class="disclaimer">
+    ⚠ 본 챗봇의 답변은 사내 규정 요약을 근거로 한 참고용 안내이며, 법적 효력이 있는 공식 해석이 아닙니다. 정확한 적용은 인사팀에 문의하세요.
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="welcome">
+      안녕하세요! <b>메가인포 HR 챗봇</b>입니다.<br>
+      취업규칙 및 인사관리규정 12종(승진·임금·포상·경조사·장학금·문화생활비·자격증·회식·수습평가·교육훈련·차량관리·사내추천)의 내용을 바탕으로 답변드립니다. 아래 주제를 눌러보시거나 직접 질문을 입력해 주세요.
+      <div class="chips" id="chips"></div>
+    </div>
+  </div>
+
+  <div class="inputbar">
+    <div class="inputrow">
+      <textarea id="input" rows="1" placeholder="궁금한 인사 규정을 입력하세요 (예: 육아휴직 기간이 어떻게 되나요?)"></textarea>
+      <button class="send-btn" id="sendBtn" title="전송">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12L21 3L15 21L11 13L3 12Z" stroke="white" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="foot-note">사내 규정 기반 오프라인 안내 챗봇 · 실제 인사 처리는 인사팀 확인이 필요합니다</div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   지식베이스: 취업규칙(2026.08.01 개정) + 인사관리규정 12종(26.07.27)
+   각 항목 = { id, title, keywords[], answer }
+   ============================================================ */
+const KB = [
+  {
+    id:'annual_leave',
+    title:'연차유급휴가',
+    keywords:['연차','유급휴가','연차휴가','휴가일수','15일','연차개수','연차몇일','연차사용','연차촉진'],
+    answer: `**연차유급휴가 (취업규칙 제31~32조)**
+- 1년간 80% 이상 출근: **15일** 유급휴가
+- 1년 미만 근속 또는 80% 미만 출근: 1개월 개근 시 1일
+- 3년 이상 근속: 최초 1년 초과 매 2년마다 1일 가산, **총 한도 25일**
+- 사용: 부득이한 사유 없으면 사용 3일 전 부서장 승인
+- 청구권: 발생일로부터 **1년 미사용 시 소멸** (회사 귀책사유 제외)
+- 회사는 연차사용촉진제도를 운영할 수 있으며, 촉진에도 미사용한 휴가는 금전보상하지 않음`
+  },
+  {
+    id:'family_event',
+    title:'경조사휴가·경조금',
+    keywords:['경조사','결혼','출산휴가','조의','사망','부고','경조금','경조휴가','상','장례','부모님사망','조부모','형제자매사망','축의금'],
+    answer: `**경조사휴가·지원금 (취업규칙 제35조 + 경조사지원규정, 2026.8.1 개정)**
+- 본인 결혼: **5일 / 100만원**
+- 배우자 출산: **20일**(휴일 제외, 출산일로부터 120일 내, 3회 분할 가능) / 자녀수에 따라 100·150·200만원
+- 배우자·자녀 사망: **5일 / 100만원**
+- 본인·배우자 부모(배우자 포함) 사망: **4일 / 50만원**
+- 본인·배우자 조부모 사망: **2일 / 30만원**
+- 본인·배우자 형제자매 사망: **3일 / 30만원**
+- 본인 사망: 300만원(근조기·근조화환 등)
+
+※ **2026.8.1 개정**: 경조휴가 기간 계산이 "달력일"에서 **"영업일" 기준**으로 변경되었습니다. 출산 제외 경조휴가는 사유발생일로부터 **5영업일 이내** 사용해야 하며, 경조금 청구권은 발생일로부터 90일 미청구 시 소멸됩니다. 정확한 지급액은 인사팀(경영지원실) 확인이 필요합니다.`
+  },
+  {
+    id:'parental_leave',
+    title:'육아휴직',
+    keywords:['육아휴직','육아휴가','자녀양육휴직','육아기','만8세','초등2학년'],
+    answer: `**육아휴직 (취업규칙 제18~19조, 제44조)**
+- 대상: 만 8세 이하 또는 초등학교 2학년 이하 자녀(입양 포함)를 양육하는 사원
+- 기간: **1년 이내** (한부모, 부모 각각 3개월 이상 사용, 장애아동 부모 등은 6개월 추가 가능)
+- 육아휴직 시작 전 계속근로기간 **6개월 미만이면 적용 제외**
+- **3회까지 분할 사용** 가능
+- 무급이 원칙이나, 육아휴직급여 신청에 필요한 서류는 회사가 적극 협조
+- 육아휴직 기간 중 해고 금지 (취업규칙 제51조)`
+  },
+  {
+    id:'parental_reduced',
+    title:'육아기 근로시간단축',
+    keywords:['육아기','근로시간단축','단축근무','육아단축'],
+    answer: `**육아기 근로시간단축 (취업규칙 제42~43조)**
+- 대상: 만 12세 이하 또는 초등학교 6학년 이하 자녀, 근속 1년 이상
+- 단축 후 근로시간: **주 15시간 이상 ~ 35시간 이하**
+- 기간: **1년 이내** (미사용 육아휴직 기간의 2배까지 가산 가능)
+- 회사가 허용 거부 시 서면 사유 통보 및 육아휴직 등 대안 협의 필요
+- 단축을 이유로 근로조건을 불리하게 할 수 없음`
+  },
+  {
+    id:'maternity',
+    title:'출산전후휴가',
+    keywords:['출산전후휴가','산전후휴가','임신','유산','사산','태아검진'],
+    answer: `**출산전후휴가 (취업규칙 제40~41조)**
+- 기간: **90일**(미숙아 100일, 다태아 120일), 출산 후 45일(다태아 60일) 이상 확보
+- 최초 60일분(다태아 75일분)은 통상임금 차액을 회사가 지급
+- 유산·사산휴가: 임신 15주 이내 10일 / 16~21주 30일 / 22~27주 60일 / 28주 이상 90일
+- 임신 12주 이내·32주 이후 여성: 1일 2시간 근로시간 단축 신청 가능(임금 삭감 없음)
+- 태아검진시간: 28주까지 4주 1회, 29~36주 2주 1회, 37주 이후 1주 1회 (유급)`
+  },
+  {
+    id:'severance',
+    title:'퇴직금·퇴직급여',
+    keywords:['퇴직금','퇴직급여','DC','퇴직연금','평균임금'],
+    answer: `**퇴직급여 (취업규칙 제54~55조)**
+- 1년 이상 근무자: 근속 1년당 **평균임금 30일분**
+- 1년 미만 근속 또는 4주 평균 주 소정근로 15시간 미만: **지급 대상 아님**
+- 사원 과반수 동의로 DC형 등 퇴직연금제도 도입 가능
+- 지급: 개인형퇴직연금(IRP) 계좌 등으로 이전`
+  },
+  {
+    id:'retirement_age',
+    title:'정년',
+    keywords:['정년','몇살','60세'],
+    answer: `**정년 (취업규칙 제53조)**
+정년은 **만 60세에 도달한 연도의 12월 말일**입니다.`
+  },
+  {
+    id:'dismissal',
+    title:'해고·해고예고',
+    keywords:['해고','해고예고','권고사직','부당해고'],
+    answer: `**해고 (취업규칙 제50~52조)**
+- 사회통념상 근로관계 유지가 어려운 정당한 사유가 있을 때 가능 (금고 이상 형 확정, 심신장애로 직무불능, 휴직만료 후 7일 경과 미복직 등)
+- 해고예고: **해고일로부터 30일 전 예고** 또는 **30일분 통상임금 지급** (근속 3개월 미만 등은 예외)
+- 해고제한: 업무상 재해 요양기간+30일, 산전후 휴업기간+30일, **육아휴직기간 중** 해고 금지`
+  },
+  {
+    id:'discipline',
+    title:'징계 종류와 절차',
+    keywords:['징계','징계절차','견책','감봉','정직','징계위원회','재심'],
+    answer: `**징계 (취업규칙 제57~61조)**
+- 종류: 견책(시말서+문서견책) / 감봉(1회 평균임금 1일분의 1/2, 월급여 총액 1/10 초과 불가) / 정직(3개월 이내, 무급) / 해고
+- 절차: 회의 **7일 전** 서면 출석통지 → 소명기회 부여(2회 불응 시 서면심사 가능) → 인사위원회 의결(재적 2/3 이상 찬성)
+- 재심: 통보일로부터 **7일 이내** 서면 재심신청 → 위원회 **10일 이내** 재심 개최`
+  },
+  {
+    id:'promotion',
+    title:'승진 소요 최소연수',
+    keywords:['승진','승진연차','승진연한','승진소요','승진기준','승진심사','승진제한'],
+    answer: `**승진소요최소연수 (승진관리규정 제13조)**
+- 연구원 → 주임: 3개월 근속 시 심사 없이 자동 승진
+- 주임 → 대리: 1그룹(2023.10.31 이전 입사/석사이상) 만1년 / 2그룹 만1년9개월
+- 대리 → 과장: 1그룹 만3년4개월 / 2그룹 만3년7개월
+- 과장 → 차장: 만4년 / 차장 → 부장: 만5년 / 부장 → 이사: 만5년
+- 승진시기: 일반승진 매년 1월 1일, 일반심사는 9~12월
+- **승진제한**: 징계처분 중이거나 징계집행 종료 후 일정기간 미경과 시 제외 (강등·정직 18개월, 감봉 12개월, 견책 6개월, 성범죄 관련은 각 +6개월)`
+  },
+  {
+    id:'wage_payday',
+    title:'임금 지급일·통상임금',
+    keywords:['임금지급일','월급날','급여일','통상임금','시급계산','209시간'],
+    answer: `**임금 (취업규칙 제47~48조)**
+- 산정기간: 매월 초일~말일 → **익월 10일 지급** (토요일·공휴일이면 전일 지급)
+- 통상임금 = 기본급 + 직책수당
+- 시간급 통상임금 = 월 통상임금 ÷ **209시간**
+- 연장·야간·휴일근로는 통상임금의 50% 가산 (휴일 8시간 초과분은 100%)`
+  },
+  {
+    id:'bonus',
+    title:'상여금',
+    keywords:['상여금','성과급','보너스','성과상여금'],
+    answer: `**상여금 (임금규정 제8~12조)**
+- 종류: 성과상여금(매년 5월 지급) / 특별상여금 / 기타상여금
+- 지급 제외: 촉탁직·일용직·실습생·수습중인 자, 지급월 직전 4개월 내 중도퇴사자, 징계처분 중인 자
+- 성과상여금은 근속개월수에 따라 차등 지급(전전년도 10월 입사자 100% ~ 전년도 10~12월 입사자 0%)
+- 결근·휴직일수에 따라 감산율 적용`
+  },
+  {
+    id:'work_hours',
+    title:'근로시간·연장근로 가산',
+    keywords:['근로시간','휴게시간','연장근로','야간근로','휴일근로','52시간','가산수당'],
+    answer: `**근로시간 (취업규칙 제23~29조)**
+- 소정근로: 주 40시간, 1일 8시간(09:00~18:00), 휴게 12:00~13:00
+- 연장근로: 주 12시간 한도, 사원 동의 필요
+- 가산임금: 연장·야간·휴일근로 통상임금 **50% 가산**
+- 휴일근로: 8시간 이내 50%, 8시간 초과분은 **100%** 가산
+- 야간근로(22:00~06:00): 50% 이상 가산
+- 관리감독·기밀취급 업무는 연장·휴일 가산임금 적용제외(야간근로 가산은 적용)`
+  },
+  {
+    id:'sick_leave',
+    title:'병가',
+    keywords:['병가','아파서','질병휴가','부상휴가'],
+    answer: `**병가 (취업규칙 제37조)**
+업무 외 질병·부상 시 **연간 30일 한도** 내에서 병가 허가 가능(무급). 1주 이상 계속 결근 시 진단서 첨부 필요.`
+  },
+  {
+    id:'menstrual_leave',
+    title:'생리휴가',
+    keywords:['생리휴가'],
+    answer: `**생리휴가 (취업규칙 제36조)**
+여성 사원이 청구하는 경우 **월 1일 무급** 생리휴가를 부여합니다.`
+  },
+  {
+    id:'fertility_leave',
+    title:'난임치료휴가',
+    keywords:['난임','난임치료','인공수정','체외수정'],
+    answer: `**난임치료휴가 (취업규칙 제38조)**
+연 **6일 이내**(최초 2일 유급) 휴가 부여. 시작일 3일 전까지 신청 필요.`
+  },
+  {
+    id:'family_care',
+    title:'가족돌봄휴가·휴직',
+    keywords:['가족돌봄','간병휴가','부모간병','돌봄휴직'],
+    answer: `**가족돌봄휴가/휴직 (취업규칙 제18조, 제39조)**
+- 가족돌봄휴직: 연간 **90일 이내**, 1회 30일 이상, 무급
+- 가족돌봄휴가: 연 최장 **10일**(연장 시 20일, 한부모 25일), 무급, 일 단위 사용 가능 (가족돌봄휴직 기간에 포함)`
+  },
+  {
+    id:'probation',
+    title:'수습기간·수습평가',
+    keywords:['수습기간','수습평가','수습','정식채용','채용취소'],
+    answer: `**수습기간 및 평가 (취업규칙 제7조, 수습평가규정)**
+- 수습기간: 최초 근무개시일로부터 **3개월** (근속연수에 포함)
+- 절차: 1차평가(D+30 이내) → 면담(D+35) → 최종평가(D+60 이내) → 결과보고(D+75) → 본채용/거부(D+90)
+- 평가: 업무태도 25점 + 업무능력 60점 + 기타 15점 = 100점
+- 1차 80점 이상 → 조기 정식채용 / 40점 이하 → 채용취소
+- 평균 60점 이상 정식채용(단 미흡 이하 2개 항목 이상이면 채용취소)`
+  },
+  {
+    id:'award',
+    title:'포상제도',
+    keywords:['포상','장기근속','우수사원','공헌상','표창'],
+    answer: `**포상 (포상지급규정)**
+- 장기근속: 3/5/10/15/20/30년 이상 근속 시 순금기념품+휴가(3~10일), 15년 이상은 해외여행 항공숙박권 지원
+- 공헌상: 순금기념패 3돈 + 인사평가 우대
+- 우수사원: 순금기념패 1돈 + 휴가 1일 + 인사평가 우대
+- 정기포상은 매년 시무식에 지급, 휴직자·위촉직·일용직·징계중인 자는 제외`
+  },
+  {
+    id:'scholarship',
+    title:'장학금 지원',
+    keywords:['장학금','학자금','등록금지원','자녀학자금'],
+    answer: `**장학금지급규정**
+- 본인·자녀 대학교: 납입금 **100% 지원**(학기당 500만원 한도)
+- 본인 대학원: 납입금 **50% 지원**(학기당 400만원 한도)
+- 대학 진학 수혜대상: 근속 5년 이상(대학원 7년 이상)
+- 자녀진학: 2025.5.31 이전 입사자는 근속 2년 이상, 2025.6.1 이후 입사자는 근속 5년 이상
+- 근무의무연한 미이행 시 반제 의무(박사 5년/석사 3년/1년이상연수 2년 의무근무)`
+  },
+  {
+    id:'culture_expense',
+    title:'문화생활비',
+    keywords:['문화생활비','복지포인트','문화비'],
+    answer: `**문화생활비지급규정**
+- 지급시기: **1월 5일, 7월 5일**
+- 1년 이상 근속자 100%, 1년 미만 50% 지급
+- 사용범위: 도서·영화·여행 등 문화활동, 생활체육, 체력단련(헬스 등), 자기개발(어학 등)
+- 복지카드(복지포인트)로도 지급 가능`
+  },
+  {
+    id:'certification_support',
+    title:'자격증 취득 지원',
+    keywords:['자격증','자격증지원','수강료지원','시험비'],
+    answer: `**자격증취득지원규정**
+- 지원항목: 수강료, 교재비, 시험등록비, 자격증발급수수료 (직접경비만, 식대·교통비 등 간접경비 제외)
+- 입사 전 취득한 자격증은 지원 제외
+- 취득일로부터 **90일 이내** 신청
+- 50만원 이상 지원 시 지급결정일로부터 1년간 근무의무연한(3/6/9/12개월 분기별 1/4씩 지급), 경업금지 이직·징계해고 시 전액 반환`
+  },
+  {
+    id:'dinner',
+    title:'회식비 규정',
+    keywords:['회식','회식비','부서회식'],
+    answer: `**회식규정**
+- 부서회식: 분기 1회, 1인당 5~10만원 한도(분기별 상이)
+- 신규직원회식: 분기 1회, 1인당 7만원 이내
+- 특별회식: 대표이사(전무이사 전결) 승인 필요, 1인당 10만원+α
+- 회식은 1차에서 종결 원칙, 지출품의서는 최소 7일 전 제출`
+  },
+  {
+    id:'training',
+    title:'교육훈련',
+    keywords:['교육훈련','직무교육','승진자교육','신입교육'],
+    answer: `**교육훈련규정**
+- 교육과정: 공통교육(법정의무·신입OT), 승진자교육, 역량·자기계발교육
+- 직무교육은 근무시간 내 실시 원칙(근로 제공으로 간주)
+- 교육 종료 후 7일 이내 수료증 제출
+- 귀책사유 미이수 시 지원 교육비 전액 반환 및 징계 가능`
+  },
+  {
+    id:'vehicle',
+    title:'차량관리·자가차량',
+    keywords:['차량','자가차량','유류비','출장차량'],
+    answer: `**차량관리규정**
+- 자가차량 업무사용 시 사전 신고·승인 필요(자동차등록증, 보험증권, 운전면허증 사본 제출)
+- 유류비: 차량 제원 연비의 70% 적용해 청구, 업무일로부터 60일 이내 미청구 시 청구권 상실
+- 사고 시 운전자 1차 책임 원칙(무과실 판정·상대과실·천재지변은 예외), 음주운전 등은 전적으로 운전자 책임`
+  },
+  {
+    id:'referral',
+    title:'사내추천제도',
+    keywords:['사내추천','인재추천','채용추천'],
+    answer: `**사내추천제도**
+- 포상: 팀원 추천 100만원, 팀장~실장 추천 150만원
+- 지급: 면수습 종료(정식채용) 후 다음달 10일 100% 지급. 채용취소 시 30만원(수습중 자진퇴사는 미지급)
+- 채용주관부서 직원, 채용요청 팀장/실장, 임원진은 포상 대상 제외`
+  },
+  {
+    id:'harassment',
+    title:'직장 내 괴롭힘',
+    keywords:['괴롭힘','직장내괴롭힘','신고절차','따돌림'],
+    answer: `**직장 내 괴롭힘 금지 (취업규칙 제66~74조)**
+- 예방교육 연 1회 이상(1시간 이상)
+- 인사부서에 예방·대응 담당자 1명 이상 지정
+- 신고 접수 → 지체없이 조사 → 사업주 보고. 피해자 요청 시 근무장소 변경·유급휴가 등 보호조치
+- 신고인·피해자 불리처우 금지`
+  },
+  {
+    id:'sexual_harassment',
+    title:'직장 내 성희롱',
+    keywords:['성희롱','성추행신고'],
+    answer: `**직장 내 성희롱 금지 (취업규칙 제75~77조)**
+- 예방교육 연 1회 이상
+- 물의 발생 시 해고 등 징계 가능, 가해자·피해자 인사이동 병행
+- 조사기간 중 피해자 보호조치(근무장소 변경, 유급휴가 등), 의사에 반하는 조치 금지`
+  },
+  {
+    id:'health_checkup',
+    title:'건강진단·안전보건',
+    keywords:['건강검진','건강진단','안전보건','작업환경측정'],
+    answer: `**안전보건 (취업규칙 제78~85조)**
+- 일반건강진단: 매년 1회 (사무직은 2년에 1회)
+- 작업환경측정: 6개월에 1회 이상
+- 산재는 산업재해보상보험법, 그 외 업무상 재해는 근로기준법에 따라 회사 보상`
+  },
+  {
+    id:'leave_general',
+    title:'휴직 (일반)',
+    keywords:['휴직','휴직사유','휴직신청','복직'],
+    answer: `**휴직 일반 (취업규칙 제18~22조)**
+- 사유: 업무 외 질병·부상·가사, 병역, 회사 필요(연수 등), 육아휴직, 가족돌봄휴직, 공직선거 당선
+- 육아휴직 외에는 **무급 원칙**
+- 신청: 개시 30일 전 휴직원 제출 / 복직은 만료 7일 전 복직원 제출(연장 시 30일 전)
+- 휴직기간은 근속기간에 산입되나 평균임금 산정기간에서는 제외`
+  },
+  {
+    id:'personnel_committee',
+    title:'인사위원회',
+    keywords:['인사위원회','징계위원회','위원회구성'],
+    answer: `**인사위원회 (취업규칙 제13~15조)**
+- 구성: 대표이사 + 부서장급 등 총 5명 이내(근로자위원 최소 1명 포함)
+- 기능: 표창, 징계, 기타 인사 의결
+- 소집: 원칙적으로 회의 7일 전 통보. 재적위원 과반수 출석 + 출석위원 과반수 찬성 의결(징계는 재적 2/3 이상 찬성)`
+  }
+];
+
+const SUGGESTED = [
+  {label:'연차휴가는 며칠 발생하나요?', id:'annual_leave'},
+  {label:'결혼하면 휴가와 지원금이 어떻게 되나요?', id:'family_event'},
+  {label:'육아휴직 기간이 궁금해요', id:'parental_leave'},
+  {label:'퇴직금은 어떻게 계산되나요?', id:'severance'},
+  {label:'승진 소요 최소연수가 어떻게 되나요?', id:'promotion'},
+  {label:'징계 절차가 궁금해요', id:'discipline'},
+  {label:'정년은 언제인가요?', id:'retirement_age'},
+  {label:'자격증 취득 지원 항목이 뭔가요?', id:'certification_support'}
+];
+
+/* ============================================================
+   UI 로직
+   ============================================================ */
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const sendBtn = document.getElementById('sendBtn');
+const chipsEl = document.getElementById('chips');
+
+function renderChips(){
+  chipsEl.innerHTML = '';
+  SUGGESTED.forEach(q=>{
+    const c = document.createElement('div');
+    c.className = 'chip';
+    c.textContent = q.label;
+    c.onclick = ()=>{ addUserMsg(q.label); respondById(q.id); };
+    chipsEl.appendChild(c);
+  });
+}
+renderChips();
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function formatBotText(text){
+  let t = escapeHtml(text);
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\(([^()]*(?:제\d+조|규정)[^()]*)\)/g, '<span class="cite">$1</span>');
+  return t;
+}
+
+function addUserMsg(text){
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.textContent = text;
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function addBotMsg(text, relatedIds){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  let html = `<div class="bot-label"><span class="dot"></span>HR 챗봇</div><div>${formatBotText(text)}</div>`;
+  wrap.innerHTML = html;
+  if(relatedIds && relatedIds.length){
+    const rel = document.createElement('div');
+    rel.className = 'related';
+    relatedIds.forEach(rid=>{
+      const entry = KB.find(k=>k.id===rid);
+      if(!entry) return;
+      const chip = document.createElement('div');
+      chip.className = 'related-chip';
+      chip.textContent = entry.title;
+      chip.onclick = ()=>{ addUserMsg(entry.title); respondById(rid); };
+      rel.appendChild(chip);
+    });
+    wrap.appendChild(rel);
+  }
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function findMatches(query){
+  const q = query.toLowerCase().replace(/\s+/g,'');
+  const scored = KB.map(entry=>{
+    let score = 0;
+    if(q.includes(entry.title.toLowerCase().replace(/\s+/g,''))) score += 5;
+    entry.keywords.forEach(kw=>{
+      if(q.includes(kw.toLowerCase().replace(/\s+/g,''))) score += 2;
+    });
+    return {entry, score};
+  }).filter(x=>x.score>0);
+  scored.sort((a,b)=>b.score-a.score);
+  return scored.slice(0,2).map(x=>x.entry);
+}
+
+function respondById(id){
+  const entry = KB.find(k=>k.id===id);
+  if(!entry) return;
+  setTimeout(()=>{
+    const related = KB.filter(k=>k.id!==id).slice(0,0); // no auto related for direct clicks
+    addBotMsg(entry.answer);
+  }, 250);
+}
+
+function respondToQuery(query){
+  const matches = findMatches(query);
+  setTimeout(()=>{
+    if(matches.length === 0){
+      const fallback = `죄송합니다, "${query}"에 대해 확실히 매칭되는 규정을 찾지 못했습니다.\n\n아래 주제 중 관련된 항목이 있는지 확인해 주시거나, 더 구체적인 키워드(예: 연차, 경조사, 육아휴직, 퇴직금, 징계, 정년 등)로 다시 질문해 주세요. 정확한 답변이 필요하면 인사팀에 직접 문의하시는 것을 권장드립니다.`;
+      addBotMsg(fallback, KB.slice(0,6).map(k=>k.id));
+      return;
+    }
+    if(matches.length === 1){
+      addBotMsg(matches[0].answer);
+    } else {
+      const combined = matches.map(m=>m.answer).join('\n\n---\n\n');
+      addBotMsg(combined);
+    }
+  }, 300);
+}
+
+function sendMessage(){
+  const text = inputEl.value.trim();
+  if(!text) return;
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  addUserMsg(text);
+  respondToQuery(text);
+}
+
+sendBtn.addEventListener('click', sendMessage);
+inputEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+inputEl.addEventListener('input', ()=>{
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+});
+
+/* ============================================================
+   PWA: 서비스워커 등록 + 설치 배너
+   ============================================================ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW 등록 실패:', err));
+  });
+}
+
+let deferredPrompt = null;
+const installBar = document.getElementById('installBar');
+const installBtn = document.getElementById('installBtn');
+const installDismiss = document.getElementById('installDismiss');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!localStorage.getItem('hrbot_install_dismissed')) {
+    installBar.style.display = 'flex';
+  }
+});
+
+installBtn?.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBar.style.display = 'none';
+});
+
+installDismiss?.addEventListener('click', () => {
+  installBar.style.display = 'none';
+  localStorage.setItem('hrbot_install_dismissed', '1');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBar.style.display = 'none';
+});
+</script>
+</body>
+</html>

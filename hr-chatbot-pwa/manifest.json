@@ -1,0 +1,16 @@
+{
+  "name": "메가인포 HR 챗봇",
+  "short_name": "HR챗봇",
+  "description": "메가인포에셋 취업규칙·인사관리규정 안내 챗봇",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f7fa",
+  "theme_color": "#0A1628",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
