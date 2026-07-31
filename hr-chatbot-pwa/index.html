@@ -242,6 +242,13 @@
       </button>
     </div>
     <div class="foot-note">사내 규정 기반 오프라인 안내 챗봇 · 실제 인사 처리는 인사팀 확인이 필요합니다</div>
+    <div class="foot-note" id="manualInstallToggle" style="cursor:pointer;color:var(--blue);text-decoration:underline;margin-top:4px;">📲 설치 배너가 안 보이시나요? 수동 설치 방법 보기</div>
+    <div id="manualInstallGuide" style="display:none;font-size:11px;color:var(--sub);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:6px;line-height:1.7;text-align:left;">
+      <b>PC Chrome/Edge</b>: 주소창 오른쪽 끝의 설치 아이콘(⊕ 또는 모니터 모양) 클릭 → 설치<br>
+      안 보이면: 우측 상단 ⋮ 메뉴 → "저장 및 공유" 또는 "도구 더보기" → "메가인포 HR 챗봇 설치"<br><br>
+      <b>안드로이드 Chrome</b>: 우측 상단 ⋮ 메뉴 → "앱 설치" 또는 "홈 화면에 추가"<br><br>
+      <b>아이폰 Safari</b>: 하단 공유 버튼(⬆︎) → "홈 화면에 추가"
+    </div>
   </div>
 </div>
 
@@ -709,7 +716,7 @@ const installDismiss = document.getElementById('installDismiss');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  if (!localStorage.getItem('hrbot_install_dismissed')) {
+  if (!sessionStorage.getItem('hrbot_install_dismissed')) {
     installBar.style.display = 'flex';
   }
 });
@@ -724,11 +731,16 @@ installBtn?.addEventListener('click', async () => {
 
 installDismiss?.addEventListener('click', () => {
   installBar.style.display = 'none';
-  localStorage.setItem('hrbot_install_dismissed', '1');
+  sessionStorage.setItem('hrbot_install_dismissed', '1');
 });
 
 window.addEventListener('appinstalled', () => {
   installBar.style.display = 'none';
+});
+
+document.getElementById('manualInstallToggle')?.addEventListener('click', () => {
+  const guide = document.getElementById('manualInstallGuide');
+  guide.style.display = guide.style.display === 'none' ? 'block' : 'none';
 });
 </script>
 </body>
